@@ -1,12 +1,18 @@
-import { Outlet } from 'react-router-dom';
+import { useRoutes } from 'react-router-dom';
+import routes from './routes';
 import Layout from './layout/Layout.jsx';
 
 function App() {
-  return (
-    <Layout>
-      <Outlet />
-    </Layout>
+  const routing = useRoutes(
+    routes.map(route => ({
+      ...route,
+      element: route.layout === false
+        ? route.element
+        : <Layout>{route.element}</Layout>
+    }))
   );
+
+  return routing;
 }
 
 export default App;

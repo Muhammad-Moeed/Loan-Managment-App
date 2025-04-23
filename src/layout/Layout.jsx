@@ -18,27 +18,47 @@ import {
 import Sidebar from '../components/Sidebar.jsx';
 import { useState } from 'react';
 import logo from '../assets/logo.png';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+import supabase from '../services/supabaseClient.js';
 
-const Layout = ({ children }) => {
+const Layout = ({ children, layout = true }) => {
   const [anchorEl, setAnchorEl] = useState(null);
+  const navigate = useNavigate();
 
-  const handleLogout = () => {
-    console.log('User logged out');
-  };
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        toast.error('Logout failed. Please try again.');
+      }
+      else {
+        toast.success('Logged out successfully!');
+        navigate('/login', { replace: true });
+      }
+    } catch (error) {
+      toast.error('An error occurred during logout. Please try again.');
+    }
+  }
+
 
   return (
-    <Box sx={{ display: 'flex' }}>
-      <Sidebar />
-      <Box component="main" sx={{ flexGrow: 1 }}>
+    <Box sx={{ display: 'flex', width: '100%', margin: 0 }}>
+      {/* Conditionally render Sidebar based on layout prop */}
+      {layout && <Sidebar />}
+
+      <Box component="main" sx={{ flexGrow: 1, margin: 0, padding: 0 }}>
         <AppBar
           position="fixed"
           sx={{
             zIndex: (theme) => theme.zIndex.drawer + 1,
             backgroundColor: '#1e1e2f',
-            boxShadow: 'none'
+            boxShadow: 'none',
+            margin: 0, // Ensure no margin on AppBar
+            padding: 0, // Ensure no padding on AppBar
           }}
         >
-          <Toolbar sx={{ justifyContent: 'space-between' }}>
+          <Toolbar sx={{ justifyContent: 'space-between', margin: 0, padding: 0 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
               <Box
                 component="img"
@@ -119,11 +139,13 @@ const Layout = ({ children }) => {
 
         <Box
           sx={{
-            mt: 8,
-            p: 3,
+            mt: 8, // Top margin adjusted for AppBar height
+            px: layout ? 3 : 0, // If layout=true, apply padding, else no padding
+            py: layout ? 3 : 0, // If layout=true, apply padding, else no padding
             backgroundColor: '#f4f6f9',
             color: '#ffffff',
-            minHeight: '100vh'
+            minHeight: '100vh',
+            margin: 0, // Remove margin for the container Box
           }}
         >
           {children}
