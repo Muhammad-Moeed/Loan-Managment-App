@@ -1,4 +1,4 @@
-import Signup from '../pages/signup.jsx';
+import Signup from '../pages/SignUp.jsx';
 import Login from '../pages/login.jsx';
 import Dashboard from '../pages/Dashboard.jsx';
 import MyLoanRequest from '../pages/MyLoanRequest.jsx';
@@ -7,25 +7,41 @@ import Profile from '../pages/Profile';
 import ErrorPage from '../pages/ErrorPage';
 import LandingPage from '../pages/LandingPage.jsx';
 import PrivateRoute from '../components/PrivateRoute';
+import LoanDetail from '../pages/LoanDetail.jsx';
+import CompleteProfile from '../pages/CompleteProfile.jsx';
+import VerifyEmail from '../pages/VerifyEmail.jsx';
+
 
 const routes = [
   {
     path: '/',
     element: <LandingPage />,
     showInSidebar: false,
-    layout: false, 
+    layout: false,
   },
   {
     path: '/signup',
     element: <Signup />,
     showInSidebar: false,
-    layout: false, 
+    layout: false,
+  },
+  {
+    path: '/verify-email',
+    element: <VerifyEmail />,
+    showInSidebar: false,
+    layout: false,
+  },
+  { 
+    path: '/complete-profile',
+    element: <CompleteProfile />, 
+    showInSidebar: false,
+    layout: false 
   },
   {
     path: '/login',
     element: <Login />,
     showInSidebar: false,
-    layout: false, 
+    layout: false,
   },
   {
     path: '/dashboard',
@@ -73,6 +89,16 @@ const routes = [
     showInSidebar: true,
     sidebarText: 'Profile',
     sidebarIcon: 'profile',
+    layout: true,
+  },
+  {
+    path: '/loan-detail/:id',
+    element: (
+      <PrivateRoute>
+        <LoanDetail />
+      </PrivateRoute>
+    ),
+    showInSidebar: false,
     layout: true,
   },
   {

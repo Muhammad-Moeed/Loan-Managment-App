@@ -1,31 +1,34 @@
-import React, { useEffect, useState } from 'react';
-import {
-  Box, Button, TextField, Typography,
-  InputAdornment, IconButton, Paper
-} from '@mui/material';
+import React, { useState, useEffect, useContext } from 'react';
+import { Box, Button, TextField, Typography, InputAdornment, IconButton, Paper } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import LockIcon from '@mui/icons-material/Lock';
 import EmailIcon from '@mui/icons-material/Email';
 import Logo from '../assets/logo.png';
 import { Link, useNavigate } from 'react-router-dom';
 import supabase from '../services/supabaseClient';
+import { AuthContext } from '../context/AuthContext';
+
+const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    return { user: null, logout: () => {} }; 
+  }
+  return context;
+};
+
 
 const LogIn = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState(null);
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  // ✅ Check if already logged in (session exists)
   useEffect(() => {
-    const checkSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data?.session) {
-        navigate('/dashboard', { replace: true });
-      }
-    };
-    checkSession();
-  }, []);
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
 
   const togglePasswordVisibility = () => setShowPassword(prev => !prev);
 

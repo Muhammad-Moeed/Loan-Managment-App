@@ -5,21 +5,59 @@ import supabase from '../services/supabaseClient';
 const PrivateRoute = ({ children }) => {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [profileComplete, setProfileComplete] = useState(false);
 
   useEffect(() => {
-    const checkSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
-        setSession(data.session);
+    const checkSessionAndProfile = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (!session) {
+        setLoading(false);
+        return;
       }
+
+      setSession(session);
+
+      const user = session.user;
+
+      // Check email confirmation
+      if (!user.email_confirmed_at) {
+        setEmailVerified(false);
+        setLoading(false);
+        return;
+      }
+
+      setEmailVerified(true);
+
+      // Check profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('first_name, last_name')
+        .eq('id', user.id)
+        .single();
+
+      if (!profileError && profile?.first_name && profile?.last_name) {
+        setProfileComplete(true);
+      }
+
       setLoading(false);
     };
-    checkSession();
+
+    checkSessionAndProfile();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(() => {
+      checkSessionAndProfile();
+    });
+
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
   }, []);
 
   if (loading) return <div style={{ color: 'white' }}>Loading...</div>;
-
   if (!session) return <Navigate to="/login" replace />;
+  if (!emailVerified) return <Navigate to="/verify-email" replace />;
+  if (!profileComplete) return <Navigate to="/complete-profile" replace />;
 
   return children;
 };

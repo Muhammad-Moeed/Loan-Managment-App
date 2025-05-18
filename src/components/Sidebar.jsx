@@ -21,7 +21,7 @@ const Sidebar = () => {
   }, [location]);
 
   const sidebarRoutes = routes.filter(route => route.showInSidebar);
-  
+
   const iconMap = {
     dashboard: <DashboardIcon />,
     request: <LoanRequestIcon />,
@@ -38,7 +38,7 @@ const Sidebar = () => {
         '& .MuiDrawer-paper': {
           width: 240,
           boxSizing: 'border-box',
-          backgroundColor: '#2c2c2c', 
+          backgroundColor: '#2c2c2c',
           color: 'white',
           paddingTop: '16px',
         },
@@ -52,11 +52,10 @@ const Sidebar = () => {
             <ListItemButton
               component={Link}
               to={route.path}
-              onClick={() => setActivePath(route.path)} 
+              onClick={() => setActivePath(route.path)}
               sx={{
                 '&:hover': {
-                  backgroundColor: '#ffb300',
-                  color: 'black',
+                  color: '#ffb300',
                   boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.2)',
                   transform: 'scale(1.05)',
                 },
@@ -65,9 +64,9 @@ const Sidebar = () => {
                 '& .MuiListItemIcon-root': {
                   color: activePath === route.path ? 'black' : 'inherit',
                 },
-                padding: '12px 16px', 
-                borderRadius: '8px', 
-                transition: 'all 0.3s ease', 
+                padding: '12px 16px',
+                borderRadius: '8px',
+                transition: 'all 0.3s ease',
               }}
             >
               <ListItemIcon>
