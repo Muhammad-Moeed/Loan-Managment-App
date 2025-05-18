@@ -1,5 +1,5 @@
 import Signup from '../pages/SignUp.jsx';
-import Login from '../pages/login.jsx';
+import Login from '../pages/LogIn.jsx';
 import Dashboard from '../pages/Dashboard.jsx';
 import MyLoanRequest from '../pages/MyLoanRequest.jsx';
 import NewLoan from '../pages/NewLoan';
