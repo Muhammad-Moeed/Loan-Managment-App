@@ -10,6 +10,9 @@ import PrivateRoute from '../components/PrivateRoute';
 import LoanDetail from '../pages/LoanDetail.jsx';
 import CompleteProfile from '../pages/CompleteProfile.jsx';
 import VerifyEmail from '../pages/VerifyEmail.jsx';
+import AdminDashboard from '../pages/Admin/Dashboard.jsx';
+import UserManagement from '../pages/Admin/UserManagement.jsx';
+
 
 
 const routes = [
@@ -31,11 +34,11 @@ const routes = [
     showInSidebar: false,
     layout: false,
   },
-  { 
+  {
     path: '/complete-profile',
-    element: <CompleteProfile />, 
+    element: <CompleteProfile />,
     showInSidebar: false,
-    layout: false 
+    layout: false
   },
   {
     path: '/login',
@@ -43,10 +46,34 @@ const routes = [
     showInSidebar: false,
     layout: false,
   },
+
+  {
+    path: '/admin',
+    element: (
+      <PrivateRoute allowedRoles={['admin']}>
+        <AdminDashboard />
+      </PrivateRoute>
+    ),
+    showInSidebar: true,
+    sidebarIcon: 'dashboard',
+    sidebarText: 'Admin Dashboard',
+    adminOnly: true
+  },
+   {
+    path: '/admin/users',
+    element:(
+      <PrivateRoute allowedRoles={['admin']}>
+      <UserManagement />
+      </PrivateRoute>),
+    showInSidebar: true,
+    sidebarText: 'Manage Users',
+    sidebarIcon: 'users', 
+    adminOnly: true
+  },
   {
     path: '/dashboard',
     element: (
-      <PrivateRoute>
+      <PrivateRoute allowedRoles={['user']}>
         <Dashboard />
       </PrivateRoute>
     ),
@@ -58,7 +85,7 @@ const routes = [
   {
     path: '/my-loan-request',
     element: (
-      <PrivateRoute>
+      <PrivateRoute allowedRoles={['user']}>
         <MyLoanRequest />
       </PrivateRoute>
     ),
@@ -70,7 +97,7 @@ const routes = [
   {
     path: '/new-loan',
     element: (
-      <PrivateRoute>
+      <PrivateRoute  allowedRoles={['user']}>
         <NewLoan />
       </PrivateRoute>
     ),
@@ -82,19 +109,29 @@ const routes = [
   {
     path: '/profile',
     element: (
-      <PrivateRoute>
+      <PrivateRoute >
         <Profile />
       </PrivateRoute>
     ),
     showInSidebar: true,
-    sidebarText: 'Profile',
+    sidebarText: 'My Profile',
     sidebarIcon: 'profile',
     layout: true,
   },
   {
     path: '/loan-detail/:id',
     element: (
-      <PrivateRoute>
+      <PrivateRoute allowedRoles={['user']}>
+        <LoanDetail />
+      </PrivateRoute>
+    ),
+    showInSidebar: false,
+    layout: true,
+  },
+  {
+    path : '/admin/loan-detail/:id',
+    element: (
+      <PrivateRoute allowedRoles={['admin']}>
         <LoanDetail />
       </PrivateRoute>
     ),

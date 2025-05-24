@@ -11,11 +11,10 @@ import { AuthContext } from '../context/AuthContext';
 const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    return { user: null, logout: () => {} }; 
+    return { user: null, logout: () => {} };
   }
   return context;
 };
-
 
 const LogIn = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -25,9 +24,27 @@ const LogIn = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) {
-      navigate('/dashboard');
-    }
+    const fetchProfileAndRedirect = async () => {
+      if (user) {
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+
+        if (error) {
+          setError('Failed to fetch user role.');
+        } else {
+          if (profile.role === 'admin') {
+            navigate('/admin');
+          } else {
+            navigate('/dashboard');
+          }
+        }
+      }
+    };
+
+    fetchProfileAndRedirect();
   }, [user, navigate]);
 
   const togglePasswordVisibility = () => setShowPassword(prev => !prev);
@@ -45,14 +62,30 @@ const LogIn = () => {
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: formData.email,
+        email: formData.email.trim().toLowerCase(),
         password: formData.password
       });
 
       if (error) {
         setError(error.message);
       } else {
-        navigate('/dashboard', { replace: true });
+        const userId = data.user.id;
+
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', userId)
+          .single();
+
+        if (profileError) {
+          setError('Unable to fetch user role');
+        } else {
+          if (profile.role === 'admin') {
+            navigate('/admin', { replace: true });
+          } else {
+            navigate('/dashboard', { replace: true });
+          }
+        }
       }
     } catch (err) {
       setError('An unexpected error occurred');

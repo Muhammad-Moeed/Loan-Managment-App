@@ -1,12 +1,58 @@
 import React, { useEffect, useState, useContext, useCallback } from 'react';
-import { Table, Button, Typography, Tag, Tooltip, Input, Space, Dropdown, Menu } from 'antd';
+import { 
+  Table, 
+  Button, 
+  Typography, 
+  Tag, 
+  Tooltip, 
+  Input, 
+  Space, 
+  Dropdown, 
+  Menu, 
+  Skeleton,
+  Grid
+} from 'antd';
 import { Link } from 'react-router-dom';
-import { PlusCircleOutlined, SearchOutlined, CloseCircleOutlined, MoreOutlined } from '@ant-design/icons';
+import { 
+  PlusOutlined, 
+  PlusCircleOutlined,
+  SearchOutlined, 
+  ReloadOutlined, 
+  FileTextOutlined,
+  ClockCircleOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  MoreOutlined
+} from '@ant-design/icons';
 import supabase from '../services/supabaseClient';
 import { AuthContext } from '../context/AuthContext';
 import '../index.css';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
+const { useBreakpoint } = Grid;
+
+const statusConfig = {
+  approved: {
+    color: 'green',
+    icon: <CheckCircleOutlined />,
+    text: 'Approved'
+  },
+  pending: {
+    color: 'orange',
+    icon: <ClockCircleOutlined />,
+    text: 'Pending'
+  },
+  rejected: {
+    color: 'red',
+    icon: <CloseCircleOutlined />,
+    text: 'Rejected'
+  },
+  default: {
+    color: 'blue',
+    icon: <ClockCircleOutlined />,
+    text: 'Processing'
+  }
+};
 
 const MyLoanRequest = () => {
   const { user } = useContext(AuthContext);
@@ -14,22 +60,27 @@ const MyLoanRequest = () => {
   const [filteredLoans, setFilteredLoans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const screens = useBreakpoint();
 
   const fetchLoans = useCallback(async () => {
     if (!user?.id) return;
     setLoading(true);
-    const { data, error } = await supabase
-      .from('loan-form-request')
-      .select('*')
-      .eq('user_id', user.id);
+    try {
+      const { data, error } = await supabase
+        .from('loan-form-request')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching loans:', error);
-    } else {
+      if (error) throw error;
+      
       setLoans(data || []);
       setFilteredLoans(data || []);
+    } catch (error) {
+      console.error('Error fetching loans:', error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [user?.id]);
 
   useEffect(() => {
@@ -42,20 +93,34 @@ const MyLoanRequest = () => {
       setFilteredLoans(loans);
       return;
     }
-    const filtered = loans.filter(({ loan_amount, status }) => {
-      const amountStr = loan_amount?.toString().toLowerCase() || '';
-      const statusStr = status?.toLowerCase() || '';
-      return amountStr.includes(term) || statusStr.includes(term);
+    const filtered = loans.filter((loan) => {
+      return (
+        loan.loan_amount?.toString().includes(term) ||
+        loan.status?.toLowerCase().includes(term) ||
+        loan.loan_purpose?.toLowerCase().includes(term) ||
+        loan.id?.toString().includes(term)
+      );
     });
     setFilteredLoans(filtered);
   }, [searchTerm, loans]);
+
+  const handleRefresh = () => {
+    fetchLoans();
+  };
 
   const getActionMenu = (record) => (
     <Menu
       items={[
         {
           key: 'view',
+          icon: <FileTextOutlined />,
           label: <Link to={`/loan-detail/${record.id}`}>View Details</Link>,
+        },
+        {
+          key: 'refresh',
+          icon: <ReloadOutlined />,
+          label: 'Refresh Status',
+          onClick: handleRefresh,
         },
       ]}
     />
@@ -63,31 +128,60 @@ const MyLoanRequest = () => {
 
   const columns = [
     {
-      title: <b>Loan Amount</b>,
+      title: 'LOAN ID',
+      dataIndex: 'id',
+      key: 'id',
+      render: (id) => <Text code>#{id}</Text>,
+      responsive: ['md'],
+    },
+    {
+      title: 'AMOUNT',
       dataIndex: 'loan_amount',
       key: 'amount',
       sorter: (a, b) => (a.loan_amount || 0) - (b.loan_amount || 0),
-      render: (amount) => (amount ? `${amount.toLocaleString()} Pkr` : '-'),
-      width: 140,
+      render: (amount) => (
+        <Text strong style={{ color: '#1890ff' }}>
+          {amount ? `${amount.toLocaleString()} PKR` : '-'}
+        </Text>
+      ),
     },
     {
-      title: <b>Duration</b>,
+      title: 'PURPOSE',
+      dataIndex: 'loan_purpose',
+      key: 'purpose',
+      render: (purpose) => (
+        <Tooltip title={purpose}>
+          <Text ellipsis style={{ maxWidth: '150px' }}>
+            {purpose || '-'}
+          </Text>
+        </Tooltip>
+      ),
+    },
+    {
+      title: 'DURATION',
       dataIndex: 'repayment_period',
       key: 'duration',
       sorter: (a, b) => (a.repayment_period || 0) - (b.repayment_period || 0),
-      render: (duration) => (duration ? `${duration} months` : '-'),
-      width: 130,
+      render: (duration) => `${duration ? `${duration} months` : '-'}`,
+      responsive: ['lg'],
     },
     {
-      title: <b>Applied On</b>,
+      title: 'APPLIED ON',
       dataIndex: 'created_at',
       key: 'created_at',
       sorter: (a, b) => new Date(a.created_at) - new Date(b.created_at),
-      render: (date) => (date ? new Date(date).toLocaleDateString() : '-'),
-      width: 140,
+      render: (date) => (
+        date ? new Date(date).toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'short', 
+          day: 'numeric',
+          ...(screens.md ? { hour: '2-digit', minute: '2-digit' } : {})
+        }) : '-'
+      ),
+      responsive: ['md'],
     },
     {
-      title: <b>Status</b>,
+      title: 'STATUS',
       dataIndex: 'status',
       key: 'status',
       filters: [
@@ -97,45 +191,42 @@ const MyLoanRequest = () => {
       ],
       onFilter: (value, record) => record.status?.toLowerCase() === value,
       render: (status) => {
-        if (!status) status = 'Unknown';
-        let color = 'blue';
-        switch (status.toLowerCase()) {
-          case 'approved':
-            color = 'green';
-            break;
-          case 'rejected':
-            color = 'red';
-            break;
-          case 'pending':
-            color = 'orange';
-            break;
-          default:
-            color = 'blue';
-        }
+        if (!status) status = 'pending';
+        const statusLower = status.toLowerCase();
+        const config = statusConfig[statusLower] || statusConfig.default;
+        
         return (
-          <Tooltip title={`Status: ${status}`}>
-            <Tag color={color} style={{ fontWeight: 600, textTransform: 'capitalize' }}>
-              {status}
-            </Tag>
-          </Tooltip>
+          <Tag 
+            color={config.color}
+            icon={config.icon}
+            style={{ 
+              borderRadius: '20px',
+              padding: '0 12px',
+              fontWeight: 500,
+              margin: 0,
+            }}
+          >
+            {config.text}
+          </Tag>
         );
       },
-      width: 120,
     },
     {
-      title: <b>Actions</b>,
+      title: 'ACTIONS',
       key: 'action',
-      fixed: 'right',
-      className: 'action-column',
-      width: 60,
       render: (_, record) => (
-        <Dropdown overlay={getActionMenu(record)} trigger={['click']}>
+        <Dropdown 
+          overlay={getActionMenu(record)} 
+          placement="bottomRight"
+          trigger={['click']}
+          arrow
+        >
           <Button
+            shape="circle"
             icon={<MoreOutlined />}
             type="text"
-            style={{ fontSize: 20, color: '#1890ff' }}
+            style={{ color: '#8c8c8c' }}
             onClick={e => e.preventDefault()}
-            aria-label="actions"
           />
         </Dropdown>
       ),
@@ -143,80 +234,113 @@ const MyLoanRequest = () => {
   ];
 
   return (
-    <div className="page-container" style={{ paddingTop: 20 }}>
-      <div className="content-box" style={{ marginTop: 24 }}>
-        <Space direction="vertical" size="middle" style={{ width: '100%', marginBottom: 32 }}>
-          <Title level={3} style={{ margin: 0, color: '#004085', backgroundColor: '#cce5ff', padding: '10px 15px', borderRadius: 8 }}>
-            My Loan Requests
-          </Title>
-
-          <Link to="/new-loan">
+    <div style={{ 
+      padding: '20px 16px', 
+      maxWidth: '100%',
+    }}>
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column',
+        gap: '16px',
+        width: '100%'
+      }}>
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: screens.xs ? 'column' : 'row',
+          justifyContent: 'space-between', 
+          alignItems: screens.xs ? 'flex-start' : 'center',
+          gap: '16px',
+          width: '100%'
+        }}>
+          <Title level={4}
+          style={{ margin: 0, fontWeight: 600, backgroundColor:'black', color : '#ffb300', padding: '8px', borderRadius: '8px' }}>
+            My Loan Request
+            </Title>
+          <Space wrap style={{ width: screens.xs ? '100%' : 'auto' }}>
+            <Link to="/new-loan" style={{ width: screens.xs ? '100%' : 'auto' }}>
+              <Button
+                type="primary"
+                icon={<PlusCircleOutlined />}
+                block={screens.xs}
+                style={{
+                  backgroundColor: 'black',
+                  borderRadius: '8px',
+                  padding: '0 20px',
+                  height: '40px',
+                  fontWeight: 500,
+                }}
+              >
+                New Application
+              </Button>
+            </Link>
             <Button
-              icon={<PlusCircleOutlined />}
-              size="large"
-              style={{
-                borderRadius: 8,
-                fontWeight: 600,
-                backgroundColor: '#222', // dark background for button
-                color: '#fff',
-                border: 'none',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-                transition: 'background-color 0.3s ease',
-              }}
-              onMouseEnter={e => e.currentTarget.style.backgroundColor = '#000'}
-              onMouseLeave={e => e.currentTarget.style.backgroundColor = '#222'}
+              icon={<ReloadOutlined />}
+              onClick={handleRefresh}
+              loading={loading}
+              block={screens.xs}
             >
-              Apply for Loan
+              Refresh
             </Button>
-          </Link>
-        </Space>
+          </Space>
+        </div>
 
-        <Space style={{ width: '100%', marginBottom: 16, justifyContent: 'flex-end' }} align="center" size="small">
-          <Input
-            placeholder="Search by amount or status"
-            prefix={<SearchOutlined style={{ color: '#1890ff' }} />}
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            allowClear
-            style={{
-              width: 300,
-              borderRadius: 6,
-              boxShadow: '0 2px 8px rgba(24, 144, 255, 0.15)',
-              fontWeight: 500,
-              fontSize: 14,
-            }}
-          />
-          {searchTerm && (
-            <Button
-              icon={<CloseCircleOutlined />}
-              type="text"
-              danger
-              onClick={() => setSearchTerm('')}
-              style={{ fontWeight: 600 }}
-            >
-              Clear
-            </Button>
-          )}
-        </Space>
-
-        <Table
-          className="stylish-table"
-          loading={loading}
-          dataSource={filteredLoans}
-          columns={columns}
-          rowKey="id"
-          pagination={{ pageSize: 6, showSizeChanger: true, pageSizeOptions: ['5', '6', '10', '20'] }}
-          scroll={{ x: 700 }}
-          bordered={false}
-          size="middle"
-          locale={{ emptyText: 'No loan requests found. Apply for a new loan.' }}
-          rowClassName={() => 'custom-row-style'}
+        <Input
+          placeholder="Search by ID, amount, purpose or status..."
+          prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
+          suffix={
+            searchTerm && (
+              <Button
+                type="text"
+                size="small"
+                onClick={() => setSearchTerm('')}
+                style={{ color: '#8c8c8c' }}
+              >
+                Clear
+              </Button>
+            )
+          }
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          allowClear
           style={{
-            borderRadius: 12,
-            boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-          
+            width: '100%',
+            maxWidth: '500px',
+            borderRadius: '8px',
           }}
         />
+
+        {loading ? (
+          <Skeleton active paragraph={{ rows: 8 }} />
+        ) : (
+          <Table
+            columns={columns}
+            dataSource={filteredLoans}
+            rowKey="id"
+            pagination={{
+              pageSize: 8,
+              showSizeChanger: true,
+              showTotal: (total) => `${total} applications`,
+              pageSizeOptions: ['8', '15', '30'],
+            }}
+            style={{ width: '100%' }}
+            scroll={{ x: false }}
+            locale={{
+              emptyText: (
+                <div style={{ padding: '48px', textAlign: 'center' }}>
+                  <FileTextOutlined style={{ fontSize: '48px', color: '#bfbfbf', marginBottom: '16px' }} />
+                  <Text type="secondary">No loan applications found</Text>
+                  <div style={{ marginTop: '16px' }}>
+                    <Link to="/new-loan">
+                      <Button type="primary" style={{backgroundColor:'black'}} icon={<PlusOutlined />}>
+                        Apply for a new loan
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              )
+            }}
+          />
+        )}
       </div>
     </div>
   );

@@ -9,25 +9,30 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const getSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) console.error(error.message);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    };
+ useEffect(() => {
+  const getSession = async () => {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error) console.error(error.message);
+    setUser(session?.user ?? null);
+    setLoading(false);
+  };
 
-    getSession();
+  getSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_OUT') {
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    async (event, session) => {
+      if (event === 'SIGNED_IN') {
+        setUser(session?.user ?? null);
+      } else if (event === 'SIGNED_OUT') {
         setUser(null);
         navigate('/login');
       }
-    });
+    }
+  );
 
-    return () => subscription.unsubscribe();
-  }, []);
+  return () => subscription.unsubscribe();
+}, []);
+
 
   const logout = async () => {
     await supabase.auth.signOut();

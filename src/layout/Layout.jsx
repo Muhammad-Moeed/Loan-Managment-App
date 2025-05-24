@@ -5,143 +5,195 @@ import {
   Typography,
   IconButton,
   InputBase,
-  alpha
+  alpha,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
-  Notifications as NotificationsIcon,
   Search as SearchIcon,
-  AccountCircle as AccountIcon,
-  Logout as LogoutIcon,
-  Settings as SettingsIcon
 } from '@mui/icons-material';
 import Sidebar from '../components/Sidebar.jsx';
-import { useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
 import logo from '../assets/logo.png';
-import { toast } from 'react-toastify';
-
-
+import { useState } from 'react';
 
 const Layout = ({ children, layout = true }) => {
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
 
- const { logout } = useContext(AuthContext);
- console.log(logout)
-
-const handleLogout = async () => {
-  try {
-    await logout();
-    toast.success('Logged out successfully!');
-  } catch (error) {
-    toast.error('Logout failed. Please try again.');
-  }
-};
-
-
+  const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
+  const handleMenuClose = () => setAnchorEl(null);
 
   return (
-    <Box sx={{ display: 'flex', width: '100%', margin: 0 }}>
+    <Box sx={{ display: 'flex', width: '100%', minHeight: '100vh', bgcolor: '#f4f6f9' }}>
       {layout && <Sidebar />}
 
-      <Box component="main" sx={{ flexGrow: 1, margin: 0, padding: 0 }}>
+      <Box component="main" sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+        {/* Professional Header with Original Colors */}
         <AppBar
           position="fixed"
           sx={{
             zIndex: (theme) => theme.zIndex.drawer + 1,
-            backgroundColor: '#1e1e2f',
-            boxShadow: 'none',
-            margin: 0, 
-            padding: 0,
+            backgroundColor: '#1e1e2f', // Original dark blue
+            backgroundImage: 'linear-gradient(to right, #1e1e2f, #2a2a3a)', // Gradient for depth
+            boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
           }}
         >
-          <Toolbar sx={{ justifyContent: 'space-between', margin: 0, padding: 0 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
-              <Box
-                component="img"
-                src={logo}
-                alt="Asan Qarza Logo"
-                sx={{ height: 50, display: { xs: 'none', sm: 'block' } }}
-              />
-              <Typography
-                variant="h6"
-                sx={{
-                  ml: 2,
-                  fontWeight: 'bold',
-                  color: '#ffb300',
-                  display: { xs: 'none', md: 'block' }
-                }}
-              >
-                Asan Qarza
-              </Typography>
+          <Toolbar sx={{ 
+            justifyContent: 'space-between',
+            px: { xs: 2, sm: 3 },
+            py: 1
+          }}>
+            {/* Left Section - Branding */}
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center',
+              minWidth: 200
+            }}>
               <IconButton
                 edge="start"
                 color="inherit"
                 aria-label="menu"
-                sx={{ mr: 2, display: { sm: 'none' } }}
+                sx={{ 
+                  mr: 1, 
+                  display: { md: 'none' },
+                  color: '#ffb300' // Original yellow
+                }}
               >
                 <MenuIcon />
               </IconButton>
+              
+              <Box
+                component="img"
+                src={logo}
+                alt="Asan Qarza Logo"
+                sx={{ 
+                  height: 40,
+                  mr: 2,
+                  display: { xs: 'none', sm: 'block' },
+                  filter: 'drop-shadow(0 0 4px rgba(255, 179, 0, 0.3))'
+                }}
+              />
+              
+              <Typography
+                variant="h6"
+                noWrap
+                sx={{
+                  ml: 2,
+                  fontWeight: 800,
+                  letterSpacing: 0.5,
+                  color: '#ffb300', // Original yellow
+                  display: { xs: 'none', sm: 'block' },
+                  textShadow: '0 0 8px rgba(255, 179, 0, 0.3)'
+                }}
+              >
+                ASAN QARZA
+              </Typography>
             </Box>
 
-            <Box sx={{ display: 'flex', flexGrow: 1, maxWidth: 600, mx: 2 }}>
+            {/* Center Section - Search */}
+            <Box sx={{ 
+              flexGrow: 1,
+              maxWidth: 600,
+              mx: { xs: 1, md: 3 },
+              display: { xs: 'none', sm: 'block' }
+            }}>
               <Box
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
-                  backgroundColor: alpha('#ffffff', 0.1),
-                  borderRadius: 1,
+                  backgroundColor: alpha('#ffb300', 0.1),
+                  borderRadius: 2,
                   px: 2,
-                  py: 0.5,
+                  py: 0.8,
                   width: '100%',
+                  transition: 'all 0.3s ease',
+                  border: '1px solid rgba(255, 179, 0, 0.1)',
                   '&:hover': {
-                    backgroundColor: alpha('#ffffff', 0.2)
+                    backgroundColor: alpha('#ffb300', 0.15)
+                  },
+                  '&:focus-within': {
+                    backgroundColor: alpha('#ffb300', 0.2),
+                    boxShadow: '0 0 0 2px rgba(255, 179, 0, 0.2)'
                   }
                 }}
               >
-                <SearchIcon sx={{ mr: 1, color: '#ffb300' }} />
+                <SearchIcon sx={{ 
+                  mr: 1, 
+                  color: '#ffb300', // Original yellow
+                  fontSize: 20
+                }} />
                 <InputBase
-                  placeholder="Search..."
+                  placeholder="Search customers, loans..."
                   fullWidth
-                  sx={{ color: 'white' }}
+                  sx={{ 
+                    color: 'white',
+                    '& input::placeholder': {
+                      color: alpha('#ffb300', 0.6)
+                    }
+                  }}
                 />
               </Box>
             </Box>
 
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Box
-                onClick={handleLogout}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  backgroundColor: '#ffb300',
-                  color: '#1e1e2f',
-                  px: 2,
-                  py: 0.5,
-                  borderRadius: 2,
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    backgroundColor: '#fff',
-                    color: '#ff6f00'
-                  }
-                }}
-              >
-                <LogoutIcon sx={{ mr: 1 }} />
-                <Typography fontWeight="500">Logout</Typography>
-              </Box>
+            {/* Right Section - Actions */}
+            <Box sx={{ 
+              display: 'flex',
+              alignItems: 'center',
+              gap: { xs: 0.5, sm: 1.5 },
+              minWidth: 200,
+              justifyContent: 'flex-end'
+            }}>
+        
+              
+           
             </Box>
           </Toolbar>
+
+          {/* Mobile Search */}
+          <Box sx={{ 
+            px: 2, 
+            pb: 1.5,
+            display: { xs: 'block', sm: 'none' }
+          }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                backgroundColor: alpha('#ffb300', 0.1),
+                borderRadius: 2,
+                px: 2,
+                py: 0.8,
+                width: '100%',
+                border: '1px solid rgba(255, 179, 0, 0.1)'
+              }}
+            >
+              <SearchIcon sx={{ 
+                mr: 1, 
+                color: '#ffb300',
+                fontSize: 20
+              }} />
+              <InputBase
+                placeholder="Search..."
+                fullWidth
+                sx={{ 
+                  color: 'white',
+                  '& input::placeholder': {
+                    color: alpha('#ffb300', 0.6)
+                  }
+                }}
+              />
+            </Box>
+          </Box>
         </AppBar>
 
+        {/* Main Content */}
         <Box
           sx={{
-            mt: 8, 
-            px: layout ? 3 : 0, 
-            py: layout ? 3 : 0, 
-            backgroundColor: '#f4f6f9',
-            color: '#ffffff',
-            minHeight: '100vh',
-            margin: 0, 
+            flex: 1,
+            mt: { xs: 12, sm: 9 },
+            px: layout ? { xs: 2, sm: 3 } : 0,
+            py: layout ? 3 : 0,
+            backgroundColor: '#f4f6f9'
           }}
         >
           {children}
