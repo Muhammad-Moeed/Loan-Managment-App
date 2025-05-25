@@ -42,7 +42,7 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import supabase from '../services/supabaseClient';
 import Chart from 'react-apexcharts';
-import '../app.css';
+import '../app.css'
 
 dayjs.extend(relativeTime);
 
