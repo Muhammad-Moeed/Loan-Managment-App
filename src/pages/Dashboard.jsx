@@ -43,7 +43,6 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import supabase from '../services/supabaseClient';
 import Chart from 'react-apexcharts';
 import '../app.css'
-
 dayjs.extend(relativeTime);
 
 const { Title, Text } = Typography;
