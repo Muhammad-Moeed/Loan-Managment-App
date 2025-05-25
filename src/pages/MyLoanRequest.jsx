@@ -1,23 +1,25 @@
 import React, { useEffect, useState, useContext, useCallback } from 'react';
-import { 
-  Table, 
-  Button, 
-  Typography, 
-  Tag, 
-  Tooltip, 
-  Input, 
-  Space, 
-  Dropdown, 
-  Menu, 
+import {
+  Table,
+  Button,
+  Typography,
+  Tag,
+  Tooltip,
+  Input,
+  Space,
+  Dropdown,
+  Menu,
   Skeleton,
-  Grid
+  Grid,
+  ConfigProvider,
+  Card
 } from 'antd';
 import { Link } from 'react-router-dom';
-import { 
-  PlusOutlined, 
+import {
+  PlusOutlined,
   PlusCircleOutlined,
-  SearchOutlined, 
-  ReloadOutlined, 
+  SearchOutlined,
+  ReloadOutlined,
   FileTextOutlined,
   ClockCircleOutlined,
   CheckCircleOutlined,
@@ -26,10 +28,51 @@ import {
 } from '@ant-design/icons';
 import supabase from '../services/supabaseClient';
 import { AuthContext } from '../context/AuthContext';
-import '../index.css';
 
 const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
+const themeConfig = {
+  token: {
+    colorPrimary: '#ffb300',
+    colorBorder: '#d9d9d9',
+    colorText: '#1a1a1a',
+    colorTextSecondary: '#595959',
+    borderRadius: 6,
+    fontSize: 14,
+    wireframe: false
+  },
+  components: {
+    Table: {
+      headerBg: '#1a1a1a',
+      headerColor: '#ffb300',
+      headerSplitColor: '#333333',
+      borderColor: '#d9d9d9',
+      headerBorderRadius: 0,
+      cellPaddingBlock: 12,
+      cellPaddingInline: 16,
+      rowHoverBg: '#fafafa',
+      cellFontSize: 13,
+    },
+    Button: {
+      colorPrimary: '#1a1a1a',
+      colorPrimaryHover: '#000000',
+      colorPrimaryActive: '#000000',
+      primaryColor: '#ffb300',
+      fontWeight: 500,
+      controlHeight: 36,
+    },
+    Input: {
+      colorBorder: '#d9d9d9',
+      hoverBorderColor: '#ffb300',
+      activeBorderColor: '#ffb300',
+    },
+    Card: {
+      colorBorder: '#d9d9d9',
+      borderRadius: 8,
+      boxShadow: '0 1px 2px 0 rgba(0,0,0,0.05)'
+    }
+  }
+};
 
 const statusConfig = {
   approved: {
@@ -73,7 +116,7 @@ const MyLoanRequest = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      
+
       setLoans(data || []);
       setFilteredLoans(data || []);
     } catch (error) {
@@ -131,7 +174,7 @@ const MyLoanRequest = () => {
       title: 'LOAN ID',
       dataIndex: 'id',
       key: 'id',
-      render: (id) => <Text code>#{id}</Text>,
+      render: (id) => <Text strong>#{id}</Text>,
       responsive: ['md'],
     },
     {
@@ -140,8 +183,8 @@ const MyLoanRequest = () => {
       key: 'amount',
       sorter: (a, b) => (a.loan_amount || 0) - (b.loan_amount || 0),
       render: (amount) => (
-        <Text strong style={{ color: '#1890ff' }}>
-          {amount ? `${amount.toLocaleString()} PKR` : '-'}
+        <Text strong style={{ color: '#1a1a1a' }}>
+          {amount ? `PKR ${amount.toLocaleString()}` : '-'}
         </Text>
       ),
     },
@@ -171,12 +214,14 @@ const MyLoanRequest = () => {
       key: 'created_at',
       sorter: (a, b) => new Date(a.created_at) - new Date(b.created_at),
       render: (date) => (
-        date ? new Date(date).toLocaleDateString('en-US', { 
-          year: 'numeric', 
-          month: 'short', 
-          day: 'numeric',
-          ...(screens.md ? { hour: '2-digit', minute: '2-digit' } : {})
-        }) : '-'
+        <Text>
+          {date ? new Date(date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            ...(screens.md ? { hour: '2-digit', minute: '2-digit' } : {})
+          }) : '-'}
+        </Text>
       ),
       responsive: ['md'],
     },
@@ -194,16 +239,17 @@ const MyLoanRequest = () => {
         if (!status) status = 'pending';
         const statusLower = status.toLowerCase();
         const config = statusConfig[statusLower] || statusConfig.default;
-        
+
         return (
-          <Tag 
+          <Tag
             color={config.color}
             icon={config.icon}
-            style={{ 
-              borderRadius: '20px',
-              padding: '0 12px',
+            style={{
+              borderRadius: '4px',
+              padding: '0 8px',
               fontWeight: 500,
               margin: 0,
+              fontSize: '12px'
             }}
           >
             {config.text}
@@ -212,20 +258,22 @@ const MyLoanRequest = () => {
       },
     },
     {
-      title: 'ACTIONS',
+      title: '',
       key: 'action',
+      width: 60,
       render: (_, record) => (
-        <Dropdown 
-          overlay={getActionMenu(record)} 
+        <Dropdown
+          overlay={getActionMenu(record)}
           placement="bottomRight"
           trigger={['click']}
-          arrow
+          arrow={{ pointAtCenter: true }}
         >
           <Button
             shape="circle"
-            icon={<MoreOutlined />}
+            size="small"
+            icon={<MoreOutlined style={{ fontSize: '16px' }} />}
             type="text"
-            style={{ color: '#8c8c8c' }}
+            style={{ color: '#595959' }}
             onClick={e => e.preventDefault()}
           />
         </Dropdown>
@@ -234,28 +282,23 @@ const MyLoanRequest = () => {
   ];
 
   return (
-    <div style={{ 
-      padding: '20px 16px', 
-      maxWidth: '100%',
-    }}>
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column',
-        gap: '16px',
-        width: '100%'
+    <ConfigProvider theme={themeConfig}>
+      <div style={{
+        padding: screens.xs ? '16px' : '24px',
+        maxWidth: '1440px',
+        margin: '0 auto'
       }}>
-        <div style={{ 
-          display: 'flex', 
+        <div style={{
+          display: 'flex',
           flexDirection: screens.xs ? 'column' : 'row',
-          justifyContent: 'space-between', 
+          justifyContent: 'space-between',
           alignItems: screens.xs ? 'flex-start' : 'center',
           gap: '16px',
-          width: '100%'
+          marginBottom: '24px',
         }}>
-          <Title level={4}
-          style={{ margin: 0, fontWeight: 600, backgroundColor:'black', color : '#ffb300', padding: '8px', borderRadius: '8px' }}>
-            My Loan Request
-            </Title>
+          <Title level={3} style={{ fontWeight: 600, backgroundColor: 'black', color: '#ffb300', padding: '8px', borderRadius: '8px', display: 'inline-block' }}>
+            My Loan Request</Title>
+
           <Space wrap style={{ width: screens.xs ? '100%' : 'auto' }}>
             <Link to="/new-loan" style={{ width: screens.xs ? '100%' : 'auto' }}>
               <Button
@@ -263,11 +306,13 @@ const MyLoanRequest = () => {
                 icon={<PlusCircleOutlined />}
                 block={screens.xs}
                 style={{
-                  backgroundColor: 'black',
+                  backgroundColor: '#000000',
+                  color: '#ffb300',
                   borderRadius: '8px',
                   padding: '0 20px',
                   height: '40px',
                   fontWeight: 500,
+                  border: '1px solid #333333'
                 }}
               >
                 New Application
@@ -277,7 +322,9 @@ const MyLoanRequest = () => {
               icon={<ReloadOutlined />}
               onClick={handleRefresh}
               loading={loading}
-              block={screens.xs}
+              style={{
+                border: '1px solid #333333'
+              }}
             >
               Refresh
             </Button>
@@ -306,43 +353,78 @@ const MyLoanRequest = () => {
             width: '100%',
             maxWidth: '500px',
             borderRadius: '8px',
+            border: '1px solid #333333',
+            marginBottom: '24px'
           }}
         />
 
-        {loading ? (
-          <Skeleton active paragraph={{ rows: 8 }} />
-        ) : (
-          <Table
-            columns={columns}
-            dataSource={filteredLoans}
-            rowKey="id"
-            pagination={{
-              pageSize: 8,
-              showSizeChanger: true,
-              showTotal: (total) => `${total} applications`,
-              pageSizeOptions: ['8', '15', '30'],
-            }}
-            style={{ width: '100%' }}
-            scroll={{ x: false }}
-            locale={{
-              emptyText: (
-                <div style={{ padding: '48px', textAlign: 'center' }}>
-                  <FileTextOutlined style={{ fontSize: '48px', color: '#bfbfbf', marginBottom: '16px' }} />
-                  <Text type="secondary">No loan applications found</Text>
-                  <div style={{ marginTop: '16px' }}>
+        <Card
+          bordered={false}
+          style={{
+            boxShadow: '0 1px 2px 0 rgba(0,0,0,0.05)',
+            padding: 0
+          }}
+          bodyStyle={{ padding: 0 }}
+        >
+          {loading ? (
+            <Skeleton active paragraph={{ rows: 6 }} />
+          ) : (
+            <Table
+              columns={columns}
+              dataSource={filteredLoans}
+              rowKey="id"
+              pagination={{
+                pageSize: 10,
+                showSizeChanger: true,
+                showTotal: (total) => `Total ${total} applications`,
+                pageSizeOptions: ['10', '25', '50'],
+                size: 'small'
+              }}
+              scroll={{ x: true }}
+              size="middle"
+              bordered
+              locale={{
+                emptyText: (
+                  <div style={{
+                    padding: '40px 16px',
+                    textAlign: 'center',
+                    color: '#595959'
+                  }}>
+                    <FileTextOutlined style={{
+                      fontSize: '48px',
+                      color: '#d9d9d9',
+                      marginBottom: '16px'
+                    }} />
+                    <div style={{ marginBottom: '16px' }}>
+                      <Text strong style={{ display: 'block', marginBottom: '4px' }}>
+                        No loan applications found
+                      </Text>
+                      <Text type="secondary" style={{ fontSize: '13px' }}>
+                        You haven't applied for any loans yet
+                      </Text>
+                    </div>
                     <Link to="/new-loan">
-                      <Button type="primary" style={{backgroundColor:'black'}} icon={<PlusOutlined />}>
-                        Apply for a new loan
+                      <Button
+                        type="primary"
+                        icon={<PlusOutlined />}
+                        style={{
+                          minWidth: '180px',
+                          backgroundColor: '#000000',
+                          color: '#ffb300',
+                          border: '1px solid #333333'
+                        }}
+                      >
+                        Apply for a loan
                       </Button>
                     </Link>
                   </div>
-                </div>
-              )
-            }}
-          />
-        )}
+                )
+              }}
+            />
+          )}
+        </Card>
       </div>
-    </div>
+    </ConfigProvider>
   );
 };
 

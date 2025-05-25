@@ -96,7 +96,7 @@ const LogIn = () => {
     <Box
       sx={{
         width: '100vw', height: '100vh', overflow: 'hidden',
-        background: 'linear-gradient(145deg, #000000, #1a1a1a)',
+        background: 'white',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}
     >

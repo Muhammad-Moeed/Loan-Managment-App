@@ -320,7 +320,6 @@ const Profile = () => {
           </Card>
         </div>
         
-        {/* Right Column - 70% width */}
         <div style={{ flex: 2 }}>
           <Card style={{
             borderRadius: '12px',

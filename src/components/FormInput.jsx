@@ -4,8 +4,6 @@ import { UploadOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
 
 const { Option } = Select;
-
-// normFile function to normalize the file input
 const normFile = (e) => {
   console.log('Upload event:', e);
   if (Array.isArray(e)) {

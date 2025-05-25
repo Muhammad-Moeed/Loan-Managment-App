@@ -1,4 +1,3 @@
-// AdminDashboard.jsx
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import supabase from '../../services/supabaseClient';
@@ -28,7 +27,6 @@ import {
   Alert,
   Grid,
   Card,
-  Divider,
   Avatar
 } from '@mui/material';
 import {
@@ -38,7 +36,6 @@ import {
   Visibility,
   Refresh,
   Search,
-  FilterList,
   AttachMoney,
   ThumbUp,
   ThumbDown,
@@ -47,17 +44,15 @@ import {
 import { styled } from '@mui/material/styles';
 import dayjs from 'dayjs';
 
-// Custom theme colors
 const themeColors = {
   primary: '#000000',
-  secondary: '#FFD700',
-  background: '#f5f5f5', // Light background for better contrast
+  secondary: '#ffb300',
+  background: '#f5f5f5',
   paper: '#FFFFFF',
   text: '#000000',
   border: '#e0e0e0'
 };
 
-// Custom styled components
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
   '&:nth-of-type(odd)': {
     backgroundColor: '#fafafa',
@@ -68,7 +63,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 }));
 
 const statusConfig = {
-  pending: { color: 'warning', icon: <MoreVert sx={{ color: '#FFD700' }} /> },
+  pending: { color: 'warning', icon: <MoreVert sx={{ color: '#ffb300' }} /> },
   approved: { color: 'success', icon: <CheckCircle sx={{ color: '#4CAF50' }} /> },
   rejected: { color: 'error', icon: <Cancel sx={{ color: '#F44336' }} /> }
 };
@@ -88,7 +83,6 @@ export default function AdminDashboard() {
     severity: 'success'
   });
 
-  // Calculate statistics from Supabase data
   const stats = {
     total: requests.length,
     approved: requests.filter(req => req.status === 'approved').length,
@@ -134,11 +128,11 @@ export default function AdminDashboard() {
 
       if (error) throw error;
 
-      setRequests(prev => prev.map(req => 
+      setRequests(prev => prev.map(req =>
         req.id === id ? { ...req, status: newStatus } : req
       ));
       showSnackbar(`Status updated to ${newStatus}`, 'success');
-      fetchLoanRequests(); // Refresh stats
+      fetchLoanRequests();
     } catch (err) {
       console.error('Error:', err.message);
       showSnackbar(`Update failed: ${err.message}`, 'error');
@@ -165,7 +159,7 @@ export default function AdminDashboard() {
     fetchLoanRequests();
   }, [statusFilter, searchTerm]);
 
-  const filteredRequests = requests.filter(req => 
+  const filteredRequests = requests.filter(req =>
     req.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     req.loan_amount?.toString().includes(searchTerm) ||
     req.id?.toString().includes(searchTerm)
@@ -177,54 +171,66 @@ export default function AdminDashboard() {
   );
 
   return (
-    <Box sx={{ 
-      p: 3, 
+    <Box sx={{
+      p: 3,
       backgroundColor: themeColors.background,
       minHeight: '100vh',
       color: themeColors.text,
-      margin: 0 // Remove default margins
+      margin: 0
     }}>
       {/* Header Section */}
-      <Box sx={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
+      <Box sx={{
+        display: 'flex',
+        justifyContent: 'space-between',
         alignItems: 'center',
         mb: 3,
-        padding: 0 // Remove padding
+        padding: 0
       }}>
         <Typography variant="h4" fontWeight="bold" sx={{ color: 'white', backgroundColor: 'black', padding: 2, borderRadius: 2 }}>
           <span style={{ color: themeColors.secondary }}>Admin</span> Management Dashboard
         </Typography>
         <Button
           variant="contained"
-          sx={{ 
+          sx={{
             backgroundColor: themeColors.secondary,
             color: themeColors.primary,
-            '&:hover': {
-              backgroundColor: '#FFC000',
-            },
+            fontWeight: 'bold',
+            px: 2.5,
+            py: 1,
             borderRadius: 2,
-            padding: '8px 16px'
+            textTransform: 'none',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              backgroundColor: '#FFB300',
+              transform: 'scale(1.03)',
+              boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+            },
+            '&:active': {
+              transform: 'scale(0.98)',
+            },
           }}
-          startIcon={<Refresh />}
+          startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <Refresh />}
+          disabled={loading}
+
           onClick={fetchLoanRequests}
         >
-          Refresh
+          REFRESH
         </Button>
+
       </Box>
 
-      {/* Statistics Cards - Now with proper PKR display */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ 
+          <Card sx={{
             p: 2,
             backgroundColor: themeColors.paper,
             borderLeft: `4px solid ${themeColors.secondary}`,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
           }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Avatar sx={{ 
-                bgcolor: '#f5f5f5', 
+              <Avatar sx={{
+                bgcolor: '#f5f5f5',
                 mr: 2,
                 color: themeColors.secondary
               }}>
@@ -237,17 +243,17 @@ export default function AdminDashboard() {
             </Box>
           </Card>
         </Grid>
-        
+
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ 
+          <Card sx={{
             p: 2,
             backgroundColor: themeColors.paper,
             borderLeft: '4px solid #4CAF50',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
           }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Avatar sx={{ 
-                bgcolor: '#f5f5f5', 
+              <Avatar sx={{
+                bgcolor: '#f5f5f5',
                 mr: 2,
                 color: '#4CAF50'
               }}>
@@ -260,17 +266,17 @@ export default function AdminDashboard() {
             </Box>
           </Card>
         </Grid>
-        
+
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ 
+          <Card sx={{
             p: 2,
             backgroundColor: themeColors.paper,
             borderLeft: '4px solid #F44336',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
           }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Avatar sx={{ 
-                bgcolor: '#f5f5f5', 
+              <Avatar sx={{
+                bgcolor: '#f5f5f5',
                 mr: 2,
                 color: '#F44336'
               }}>
@@ -283,17 +289,17 @@ export default function AdminDashboard() {
             </Box>
           </Card>
         </Grid>
-        
+
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ 
+          <Card sx={{
             p: 2,
             backgroundColor: themeColors.paper,
             borderLeft: '4px solid #2196F3',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
           }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Avatar sx={{ 
-                bgcolor: '#f5f5f5', 
+              <Avatar sx={{
+                bgcolor: '#f5f5f5',
                 mr: 2,
                 color: '#2196F3'
               }}>
@@ -311,14 +317,14 @@ export default function AdminDashboard() {
       </Grid>
 
       {/* Filter Controls */}
-      <Paper sx={{ 
-        p: 2, 
+      <Paper sx={{
+        p: 2,
         mb: 3,
         display: 'flex',
         gap: 2,
         alignItems: 'center',
         backgroundColor: themeColors.paper,
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+        boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
       }}>
         <TextField
           variant="outlined"
@@ -348,12 +354,16 @@ export default function AdminDashboard() {
             onChange={(e) => setStatusFilter(e.target.value)}
             label="Filter by Status"
             sx={{
+              color: themeColors,
               '& .MuiOutlinedInput-notchedOutline': {
-                borderColor: themeColors.border
+                borderColor: 'black'
+              },
+              '& .MuiSvgIcon-root': {
+                color: themeColors.text
               }
             }}
           >
-            <MenuItem value="all">All Statuses</MenuItem>
+            <MenuItem value="all">All Status</MenuItem>
             <MenuItem value="pending">Pending</MenuItem>
             <MenuItem value="approved">Approved</MenuItem>
             <MenuItem value="rejected">Rejected</MenuItem>
@@ -367,30 +377,30 @@ export default function AdminDashboard() {
           <CircularProgress sx={{ color: themeColors.secondary }} />
         </Box>
       ) : error ? (
-        <Paper sx={{ 
-          p: 3, 
+        <Paper sx={{
+          p: 3,
           textAlign: 'center',
           backgroundColor: themeColors.paper,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
         }}>
           <Typography color="error" gutterBottom>
             Error Loading Data
           </Typography>
           <Typography sx={{ mb: 2 }}>{error}</Typography>
-          <Button 
-            variant="outlined" 
+          <Button
+            variant="outlined"
             onClick={fetchLoanRequests}
-            sx={{ 
-              color: themeColors.secondary, 
-              borderColor: themeColors.secondary 
+            sx={{
+              color: themeColors.secondary,
+              borderColor: themeColors.secondary
             }}
           >
             Retry
           </Button>
         </Paper>
       ) : requests.length === 0 ? (
-        <Paper sx={{ 
-          p: 3, 
+        <Paper sx={{
+          p: 3,
           textAlign: 'center',
           backgroundColor: themeColors.paper,
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
@@ -399,19 +409,19 @@ export default function AdminDashboard() {
             No loan requests found
           </Typography>
           <Typography color="textSecondary">
-            {statusFilter !== 'all' 
-              ? `No ${statusFilter} requests available` 
+            {statusFilter !== 'all'
+              ? `No ${statusFilter} requests available`
               : 'No requests have been submitted yet'}
           </Typography>
         </Paper>
       ) : (
         <>
-          <TableContainer 
-            component={Paper} 
-            sx={{ 
-              mb: 2, 
+          <TableContainer
+            component={Paper}
+            sx={{
+              mb: 2,
               backgroundColor: themeColors.paper,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
             }}
           >
             <Table>
@@ -516,8 +526,8 @@ export default function AdminDashboard() {
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
-        <Alert 
-          onClose={handleCloseSnackbar} 
+        <Alert
+          onClose={handleCloseSnackbar}
           severity={snackbar.severity}
           sx={{ width: '100%' }}
         >

@@ -5,6 +5,7 @@ import FormButton from './FormButton';
 import supabase from '../services/supabaseClient';
 import { uploadFile } from '../utils/uploadFile';
 import { AuthContext } from '../context/AuthContext';
+import { color } from 'framer-motion';
 
 const { Step } = Steps;
 
@@ -152,7 +153,7 @@ const LoanForm = () => {
       if (loading) return;
       setLoading(true);
       const finalValues = { ...formValues, ...form.getFieldsValue() };
-      console.log('Final form values:', finalValues); // Debug log
+      console.log('Final form values:', finalValues); 
 
       // Upload files
       const cnicFrontFile = finalValues.cnicFront?.[0]?.originFileObj;
@@ -257,13 +258,14 @@ const LoanForm = () => {
           </FormButton>
         )}
         {current < steps.length - 1 && (
-          <FormButton type="primary" onClick={next}>
+          <FormButton style={{background : 'black'}} onClick={next}>
             Next
           </FormButton>
         )}
         {current === steps.length - 1 && (
           <FormButton 
             type="primary" 
+            style={{ background: 'black' }}
             onClick={handleSubmit}
             loading={loading}
           >

@@ -32,8 +32,8 @@ const Layout = ({ children, layout = true }) => {
           position="fixed"
           sx={{
             zIndex: (theme) => theme.zIndex.drawer + 1,
-            backgroundColor: '#1e1e2f', // Original dark blue
-            backgroundImage: 'linear-gradient(to right, #1e1e2f, #2a2a3a)', // Gradient for depth
+            backgroundColor: '#1e1e2f', 
+            backgroundImage: 'linear-gradient(to right, #1e1e2f, #2a2a3a)',
             boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
             borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
           }}
@@ -56,7 +56,7 @@ const Layout = ({ children, layout = true }) => {
                 sx={{ 
                   mr: 1, 
                   display: { md: 'none' },
-                  color: '#ffb300' // Original yellow
+                  color: '#ffb300'
                 }}
               >
                 <MenuIcon />
@@ -81,7 +81,7 @@ const Layout = ({ children, layout = true }) => {
                   ml: 2,
                   fontWeight: 800,
                   letterSpacing: 0.5,
-                  color: '#ffb300', // Original yellow
+                  color: '#ffb300',  
                   display: { xs: 'none', sm: 'block' },
                   textShadow: '0 0 8px rgba(255, 179, 0, 0.3)'
                 }}
@@ -119,7 +119,7 @@ const Layout = ({ children, layout = true }) => {
               >
                 <SearchIcon sx={{ 
                   mr: 1, 
-                  color: '#ffb300', // Original yellow
+                  color: '#ffb300',
                   fontSize: 20
                 }} />
                 <InputBase
